@@ -1,0 +1,218 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8">
+<title>Controlled Auto-indent</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+html, body                   {margin: 0; padding: 0; width: 100%; height: 100%;}
+body                         {display: flex; flex-direction: column; font: 1em Calibri, Tahoma, sans-serif;}
+
+@media (max-height: 27rem) {
+    body {display: block;}
+}
+
+header                       {padding: 0 1em; text-align: center;}
+header                       {border-style: none none solid none; border-width: 0 0 2px 0;}
+header                       {font-size: min(5vw,10vh,1.75rem); font-weight: bold;}
+
+footer                       {padding: 4px 0; width: 100%; display: flex; flex-direction: row; align-items: center; font-size: medium;}
+footer                       {border-style: solid none none none; border-width: 2px 0 0 0;}
+footer a[rel=license]        {padding: 0 8px; text-decoration: none;}
+footer a[rel=license] img    {border: none;}
+
+#foottext                    {flex: 1; margin: 0 1em; text-align: center;}
+#foottext a                  {white-space: nowrap; text-decoration: none; color: inherit; }
+#foottext a:hover            {text-decoration: underline;}
+#foottext.linklist a:link    {color: #00c;}
+#foottext.linklist a:visited {color: #900;}
+
+#fontdown, #fontup           {margin: 0 8px; padding: 0; height: 28px; width: 48px; text-align: center; display: none;}
+#fontdown, #fontup           {color: #000; border: none; border-radius: 15%/20%; cursor: pointer;}
+#fontdown, #fontup           {background: transparent;}
+#fontdown:hover,
+#fontup:hover                {background: #333; color: #fff;}
+#fontdown                    {font: inherit; font-size: 13px;}
+#fontup                      {font: inherit; font-size: 19px; line-height: 1.0;}
+
+main                         {flex: 1; overflow: auto;}
+article                      {padding: 0 1em; line-height: 1.4;}
+p                            {margin: 0; padding: 0;}
+p + p                        {margin: .5em 0 0 0;}
+h1                           {line-height: 1.25; margin: .5em 0 0 0;}
+h1                           {font-size: 1.5rem; text-align: center; font-weight: bold; font-style: normal; padding: 0;}
+h2                           {font-size: 1.2rem; text-align: left;   font-weight: bold; font-style: normal; padding: 0; margin: 0;}
+h3                           {font-size: 1rem;   text-align: left;   font-weight: bold; font-style: normal; padding: 0; margin: 0;}
+
+main a                       {white-space: nowrap; text-decoration: none;}
+main a:link                  {color: #00c;}
+main a:visited               {color: #900;}
+main a:hover                 {text-decoration: underline;}
+
+main a.wrappable {white-space: normal;}
+main a.wrappable > span {display: inline-block;}
+
+@media (max-width: 30rem)   {
+    main      a {white-space: normal;}
+    #foottext a {white-space: normal;}
+    .canhide    {display: none;}
+}
+
+main article section         {border-style: none; border-width: 0; padding: 0 1em .3em 1em; background: #eee;}
+main article section         {margin: 1.25rem 0 .4rem 0;}
+main article section h2      {border-style: none none solid none; border-width: 0 0 1px 0;}
+main article section h2      {margin: 0 0 .3em -6px; padding: .2em 0 .2em 6px;}
+main article section h3      {border-style: none none solid none; border-width: 0 0 1px 0;}
+main article section h3      {margin: .75em 0 .2em 0; padding: .2em 0 .1em 0; line-height: 1.2;}
+main article h1+section      {margin-top: .75rem;}
+main article h1+p            {margin-top: .6em;}
+main article section+p       {margin-top: .75em;}
+main article section >
+             p:first-child   {margin-top: .3em;}
+
+main article section.note    {font-size: .85em; border-style: solid; border-width: 3px 1px 1px 6px; padding: 0 6px;}
+
+body h1              {margin: 0;}
+body .pagenav        {font-weight: bold; text-align: center; margin: .5em 1em 0 1em; line-height: 1; background: #eee;}
+body .pagenav a      {margin: .25em .5em; white-space: normal; display: inline-block}
+
+@media (min-width: 36rem) {
+   body main         {display: flex; flex-direction: row; padding: 0;}
+   body .pagenav     {padding: .5em 0 0 0; margin: 1.25em 1em .4em;}
+   body .pagenav     {white-space: pre;}
+   body .pagenav     {width: 9em; margin-left: calc(max(1em, (100% - (9em + 48em + 4em)) / 2));}
+   body article      {flex: 1; overflow: auto; padding: 0 1em 0 0;}
+   body h1           {margin-top: .5em;}
+}
+
+body article h1        {max-width: calc(32em + 12px);}
+body article section   {max-width: 48em;}
+
+table        {border: none; margin: 1em 0 1em 1em; width: calc(100% - 1em - 2px); border-collapse: collapse;}
+table th     {padding: .5em .5em .5em .5em; font-weight: bold;   text-align: left; vertical-align: top; border: 1px solid black;}
+table td     {padding: .5em .5em .5em .5em; font-weight: normal; text-align: left; vertical-align: top; border: 1px solid black;}
+table .group {text-align: center; background: #d0d0d0; }
+
+div.hscroll  {overflow-x: auto;}
+
+ul    {margin: 0 0 .5em 0;}
+ul li {margin: .25em 0;}
+
+pre {font-size: .9em; line-height: 1.1; background: #ddd; padding: .5em; overflow: auto;}
+
+div.boxed                 {margin: 1em 0; padding: 0 0 1em 0; border: 1px solid #000;}
+div.boxed > *:first-child {margin-top: 0; margin-left: 0; margin-right: 0; background: #ddd; padding: .5em;}
+div.boxed pre             {font-size: inherit; margin-top: 0;}
+div.boxed p               {margin-left: 1em; margin-right: 1em;}
+div.boxed p + p           {margin-left: 2.5em;}
+div.boxed ul              {margin-right: 1em;}
+div.boxed li > code:first-child {font-weight: bold;}
+
+body {color: #000; background: #d0d0d0;}
+*    {border-color: #999;}
+
+</style>
+<script>
+function doPageLoad() {
+    if (document.getElementById("fontdown")) {
+        document.getElementById("fontdown").style.display = "inline-block";
+        document.getElementById("fontup").style.display = "inline-block";
+        if (window.localStorage) {
+            var n = localStorage.getItem("DocumentationFontSize");
+            if (!isNaN(n) && n >= 9 && n <= 40) document.documentElement.style.fontSize = n + "px";
+        }
+    }
+}
+
+function setFontDown() {
+    var n = parseFloat(window.getComputedStyle(document.documentElement).fontSize);
+    if (n > 9) --n;
+    document.documentElement.style.fontSize = n + "px";
+    if (window.localStorage) localStorage.setItem("DocumentationFontSize", n);
+}
+
+function setFontUp() {
+    var n = parseFloat(window.getComputedStyle(document.documentElement).fontSize);
+    if (n < 40) ++n;
+    document.documentElement.style.fontSize = n + "px";
+    if (window.localStorage) localStorage.setItem("DocumentationFontSize", n);
+    if (window.getComputedStyle(document.body).display == "block") window.scrollBy(0,10000);
+}
+
+window.addEventListener("load", doPageLoad);
+</script>
+</head>
+<body>
+
+<header>Controlled Auto-indent</header>
+
+<main>
+
+<nav class=pagenav><a href="#introduction">Introduction</a>
+<a href="#purpose"     >Purpose and use</a>
+<a href="#installation">Installation</a>
+<a href="#settings"    >Settings</a></nav>
+
+<article>
+
+<section id=introduction><h2>Introduction</h2>
+
+<p><strong>Controlled Auto-indent</strong> is an experimental <a href="https://github.com/notepad-plus-plus/notepad-plus-plus">Notepad++</a> plugin for testing possible extensions to automatic indentation.</p>
+
+<p>Like Notepad++, this software is released under the GNU General Public License (either version 3 of the License, or, at your option, any later version).</p>
+
+<p>This plugin was built using the <a href="https://github.com/Coises/NppCppMSVS/">NppCppMSVS</a> framework, which is released under the GNU General Public License.</p>
+
+</section>
+
+<section id=purpose><h2>Purpose and use</h2>
+
+<p>This plugin implements a more customizable version of the Auto-indent feature built into Notepad++. I’ve created it to enable some discussion and evaluation of possibly useful extensions to Notepad++ itself, which hopefully will eventually render this plugin obsolete.</p>
+
+<p><strong>Controlled Auto-indent</strong> will do nothing unless you check the <strong>Enable</strong> item on its menu. This assures that you can get it out of the way quickly if it is causing problems or if you want to use only built-in Notepad++ functionality.</p>
+
+<p>Before enabling this plugin, please make sure the Notepad++ setting at <strong>Settings</strong> | <strong>Preferences...</strong> | <strong>Indentation</strong> : <strong>Auto-indent</strong> is set to <strong>None</strong>.</p>
+
+<p><strong>Controlled Auto-indent</strong> does not apply indentation to multiple or rectangular selections. This differs from the Auto-indent built into Notepad++, which computes indentation based on the primary selection or the row selected last and applies that to all selections or rows.</p>
+
+<p>The <strong>Settings...</strong> dialog, explained in detail below, offers various options to control automatic indentation.</p>
+
+</section>
+
+<section id=installation><h2>Installation</h2>
+
+<p>To install <strong>Controlled Auto-indent</strong>, download the x86 or x64 zip file, depending on whether you're using 32-bit or 64-bit Notepad++, from the <a href="https://github.com/Coises/ControlledAutoIndent/releases/latest/">latest release</a>. Unzip the file to a folder named <strong>ControlledAutoIndent</strong> (the name must be exactly this, or Notepad++ will not load the plugin) and copy that folder into the plugins directory where Notepad++ is installed (usually <strong>C:\Program Files (x86)\Notepad++\plugins</strong> for 32-bit versions or <strong>C:\Program Files\Notepad++\plugins</strong> for 64-bit versions).</p>
+
+</section>
+
+<section id=settings><h2>Settings</h2>
+
+<table class=optionsTable>
+
+<p>The most basic operation of auto-indent, which is done whenever <strong>Enabled</strong> is checked in the menu, is that when you press the Enter key the indentation (white space at the beginning of a line) of the line containing the caret before you pressed Enter is replicated at the beginning of the new line created. In some cases, where information about typical indentation in the language set for the document is available, adjustments can be applied. The settings control the details of this process.</p>
+
+<tr><th colspan=2 class=group>Common settings</th></tr>
+<tr><th>Use tabs or spaces as needed to match the document.</th><td>Indentation created by the built-in auto-indent in Notepad++ follows the setting at <strong>Settings</strong> | <strong>Preferences...</strong> | <strong>Indentation</strong> : <strong>Indent Settings</strong> : <strong>Indent using</strong>, which specifies either tabs or spaces. When this box is checked, <strong>Controlled auto-indent</strong> uses the same indentation characters as the previous line. If indentation is to be increased and the indentation in the reference line contains all tabs or all spaces, the same character is used to increase the indentation; if the reference line is not indented or contains a mixture of tabs and spaces, the <strong>Indent using</strong> setting determines the characters used for indentation.</td></tr>
+<tr><th>When indenting to match a line containing only tabs and spaces, remove the tabs and spaces from the earlier line.</th><td>When checked, pressing Enter on a line containing only tabs and/or spaces to the left of the caret replicates the indentation to the left of the cursor in the new line, but removes the tabs and spaces from the earlier line. This is useful if you often want to add empty lines between indented lines, but you want the added lines to be truly empty (not left with invisible tabs and/or spaces); however, it makes it difficult to add lines which contain only white space intentionally.</td></tr>
+
+<tr><th colspan=2 class=group>When splitting a line with the Enter key</th></tr>
+<tr><th>Trim trailing tabs and spaces from the line before the split.</th><td>When this box is checked, if you press the Enter key when the caret is within a line (any position other than the very beginning or the very end of the line) and there are blanks and/or tabs before the caret, those characters are removed when you split the line. When not checked, whitespace preceding the split point remains at the end of the line. (Note: If the caret is at the end of the line, white space is not removed; so it is still possible to add trailing white space intentionally even when this setting is checked.)</td></tr>
+<tr><th>Retain tabs and spaces following the split.</th><td>Normally, white space following the caret when a line is split with the Enter key is “absorbed” into the indentation on the new line. If this box is checked, white space following the caret remains after the indentation added to the new line. The caret is placed following the added indentation, before the retained white space.</td></tr>
+
+<tr><th colspan=2 class=group>When the language is Python</th></tr>
+<tr><th>Increase indentation after lines that end in a colon.</th><td>This is equivalent to the “Advanced” indentation for Python built in to Notepad++. When checked, if a new line is created following a line which ends with a colon (excepting white space and comments), the new line is indented a tab width more than the line with the colon.</td></tr>
+
+<tr><th colspan=2 class=group>When the language is C-like</th></tr>
+<tr><th><p>Adjust indentation for braces.</th><td>When checked, <strong>Controlled Auto-indent</strong> increases or decreases indentation according to typical conventions when the Enter key is pressed on a line containing braces (<code>{}</code>).</p><p><em>This differs from built-in Notepad++ Advanced Auto-indent</em> because it always occurs when you press the Enter key, not when you type the brace character. The reason for this choice is that the author believes it is possible to achieve greater accuracy and predictability by waiting until the line is complete.</p><p>Admittedly, this does not match the way IDEs like Visual Studio work; for technical reasons concerning the way Scintilla and Lexilla work, is it not practical in Notepad++ to obtain the same information an IDE would have at the time a brace is typed. Acting only on the Enter key allows more consistent and predicable behavior, and makes it possible to use information from the lexer to make decisions that otherwise require complex, error-prone attempts to parse the document.</p></td></tr>
+<tr><th>Add an empty line when splitting between braces.</th><td>When checked, if the Enter key is pressed when the character following the caret is a closing brace and the last before the caret (excluding comments and white space) is an opening brace, an additional line is added before the closing brace. This is especially useful if you have auto-completion for braces turned on.</td></tr>
+<tr><th>Increase indentation for continuation of incomplete statements.</th><td>In C-like languages which use a semi-colon as a statement terminator, is is customary to indent the second and subsequent lines of statements which span more that a single line. When this option is checked, <strong>Controlled Auto-indent</strong> attempts to apply this indentation automatically.<p><p>The built-in Advanced Auto-indent in Notepad++ does something similar, but only when it recognizes a compound statement (such as <code>if</code> or <code>for</code>).</p></td></tr>
+</table>
+
+</section>
+
+</article>
+
+</main><footer id=footer><a class=canhide rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" src="https://i.creativecommons.org/l/by/4.0/88x31.png"></a><div id=foottext class=linklist>
+
+<a href="https://notepad-plus-plus.org/">Notepad++</a> • <a href="https://github.com/Coises/ControlledAutoIndent">This project on GitHub</a>
+
+</div><button type=button id=fontdown onclick="setFontDown();">Txt-</button><button type=button id=fontup onclick="setFontUp();">Txt+</button>
+</footer></body></html>
